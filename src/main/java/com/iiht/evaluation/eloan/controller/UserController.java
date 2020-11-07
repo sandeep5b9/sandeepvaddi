@@ -21,17 +21,15 @@ import com.iiht.evaluation.eloan.model.LoanInfo;
 import com.iiht.evaluation.eloan.model.User;
 import com.mysql.cj.xdevapi.Statement;
 
-
-
-
 @WebServlet("/user")
 public class UserController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-private ConnectionDao connDao;
-	
+	private ConnectionDao connDao;
+
 	public void setConnDao(ConnectionDao connDao) {
 		this.connDao = connDao;
 	}
+
 	public void init(ServletConfig config) {
 		String jdbcURL = config.getServletContext().getInitParameter("jdbcUrl");
 		String jdbcUsername = config.getServletContext().getInitParameter("jdbcUsername");
@@ -40,35 +38,33 @@ private ConnectionDao connDao;
 		this.connDao = new ConnectionDao(jdbcURL, jdbcUsername, jdbcPassword);
 	}
 
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 	}
 
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String action = request.getParameter("action");
-		
+
 		String viewName = "";
 		try {
 			switch (action) {
 			case "registernewuser":
-				viewName=registernewuser(request,response);
+				viewName = registernewuser(request, response);
 				break;
 			case "validate":
-				viewName=validate(request,response);
+				viewName = validate(request, response);
 				break;
 			case "placeloan":
-				viewName=placeloan(request,response);
+				viewName = placeloan(request, response);
 				break;
 			case "application1":
-				viewName=application1(request,response);
+				viewName = application1(request, response);
 				break;
-			case "editLoanProcess"  :
-				viewName=editLoanProcess(request,response);
+			case "editLoanProcess":
+				viewName = editLoanProcess(request, response);
 				break;
 			case "registeruser":
-				viewName=registerUser(request,response);
+				viewName = registerUser(request, response);
 				break;
 			case "register":
 				viewName = register(request, response);
@@ -81,109 +77,138 @@ private ConnectionDao connDao;
 				break;
 			case "editloan":
 				viewName = editloan(request, response);
-				break;	
-			case  "displaystatus" :
-				viewName=displaystatus(request,response);
 				break;
-			default : viewName = "notfound.jsp"; break;	
+			case "displaystatus":
+				viewName = displaystatus(request, response);
+				break;
+			default:
+				viewName = "notfound.jsp";
+				break;
 			}
 		} catch (Exception ex) {
-			
+
 			throw new ServletException(ex.getMessage());
 		}
-			RequestDispatcher dispatch = 
-					request.getRequestDispatcher(viewName);
-			dispatch.forward(request, response);
+		RequestDispatcher dispatch = request.getRequestDispatcher(viewName);
+		dispatch.forward(request, response);
 	}
 
-	private String validate(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+	private String validate(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		/* write the code to validate the user */
-
+		String view = "index.jsp";
 		String logid = request.getParameter("loginid");
 		String password = request.getParameter("password");
 
-		if (logid.contentEquals("admin") && password.contains("admin")) {
-			response.sendRedirect("adminhome1.jsp");
-		} else
-			response.sendRedirect("notfound.jsp");
+		if (logid.contentEquals("admin")) {
+			if (password.equals("admin")) {
+				view = "adminhome1.jsp";
+			} else {
+				request.setAttribute("failMsg", "Invalid username/password.");
+			}
+		} else {
+			User user = connDao.getUserDetails(logid);
+			if (null == user || !user.getPassword().contentEquals(password)) {
+				request.setAttribute("failMsg", "Invalid username/password.");
+			} else {
+				view = "userhome1.jsp";
+			}
+		}
+
+		return view;
+	}
+
+	private String placeloan(HttpServletRequest request, HttpServletResponse response) {
+		// TODO Auto-generated method stub
+		/* write the code to place the loan information */
 
 		return null;
 	}
-	private String placeloan(HttpServletRequest request, HttpServletResponse response) {
-		// TODO Auto-generated method stub
-	/* write the code to place the loan information */
-		
-		return null;
-	}
+
 	private String application1(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
-	/* write the code to display the loan application page */
-		
+		/* write the code to display the loan application page */
+
 		return null;
 	}
+
 	private String editLoanProcess(HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		// TODO Auto-generated method stub
 		/* write the code to edit the loan info */
-		
+
 		return null;
 	}
+
 	private String registerUser(HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		// TODO Auto-generated method stub
 		/* write the code to redirect page to read the user details */
 		return "newuserui.jsp";
 	}
-	private String registernewuser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-		// TODO Auto-generated method stub
-		/* write the code to create the new user account read from user 
-		   and return to index page */
-		System.out.println("sucessfully redirect to login page");
-		String logid = request.getParameter("logid");
+
+	private String registernewuser(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		String view = "newuserui.jsp";
+		String logid = request.getParameter("loginid");
 		String password = request.getParameter("password");
-		
-		if(logid.contentEquals("admin") && password.contains("admin")) {
-			System.out.println("sucessfully redirect to login page");
-			response.sendRedirect("newuserui.jsp");
+
+		if (logid.contentEquals("admin")) {
+			request.setAttribute("failMsg", "Invalid username - admin.");
+		} else {
+			try {
+				User user = connDao.getUserDetails(logid);
+				if (null != user) {
+					request.setAttribute("failMsg", "Username already exist");
+				} else {
+					if (connDao.addNewUser(logid, password)) {
+						request.setAttribute("sucsMsg", "Registration successfull. Try login now");	
+						view = "index.jsp";
+					}
+					else {
+						throw new Exception("Failed to register new user");
+					}
+				}
+			} catch (Exception exception) {
+				request.setAttribute("exception", exception);
+				view = "errorPage.jsp";
+			}
 		}
-		else {
-			System.out.println("Came to error page");
-			response.sendRedirect("notfound.jsp");
-		}
-		return "index.jsp";
+		return view;
+
 	}
-	
+
 	private String register(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
 		/* write the code to redirect to register page */
-		
+
 		return null;
 	}
+
 	private String displaystatus(HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		// TODO Auto-generated method stub
-		/* write the code the display the loan status based on the given application
-		   number 
-		*/
-		
+		/*
+		 * write the code the display the loan status based on the given application
+		 * number
+		 */
+
 		String str_loanappnumber = request.getParameter("LoanApplicationNumber");
-		
+
 		return null;
 	}
 
 	private String editloan(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
-	/* write a code to return to editloan page */
+		/* write a code to return to editloan page */
 		return null;
 	}
 
 	private String trackloan(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
-	/* write a code to return to trackloan page */
-		
+		/* write a code to return to trackloan page */
+
 		return null;
 	}
 
 	private String application(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
-	/* write a code to return to trackloan page */
+		/* write a code to return to trackloan page */
 		return null;
 	}
 }

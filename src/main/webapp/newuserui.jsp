@@ -4,29 +4,32 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>eLoan New User</title>
+<title>Register New User</title>
 </head>
 <body>
-<h1>New User Registration Page</h1>
+<jsp:include page="header.jsp"/>
 <hr/>
-<form action="user" method="post">
-	<br/>
-	<label>Enter login-Id</label>
-	<br/>
-	<input type="text" name="logid"/>
-	<br/><br/>
-	<label>Enter password</label>
-	<br/>
-	<input type="password" name="password"/>
-	<br/><br/>
-	<input type="submit" value="Login" />
-	<input type="submit" value="Cancel" />
-	<a action="user?action=registerUser"></a>
-
-<body>
-	<!-- read user name and password from user to create account
-	     and send to usercontrollers registeruser method
-	-->
-
+<div align=center>
+	<h2>Register New User</h2>
+	<form action="user?action=registernewuser" method="post">
+		<div>
+			<div><label for="loginid">Enter login Id</label> </div>
+			<div><input type="text" id="loginid" name="loginid"> </div>
+		</div>
+		<div>
+			<div><label for="password">Enter password</label> </div>
+			<div><input type="text" id="password" name="password"> </div>
+		</div>
+		<div>
+			<div><input type="submit" value="Login"> </div>
+		</div>
+	</form>
+	<span>Existing User? <a href="index.jsp">Login</a></span>
+	<span style="color:red;"> 
+		<c:if test="${failMsg!=null}">${failMsg}</c:if>
+	</span>
+</div>
+<hr/>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
