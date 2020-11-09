@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
@@ -25,6 +27,7 @@ import com.mysql.cj.xdevapi.Statement;
 public class UserController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private ConnectionDao connDao;
+	private LoanInfo LoanInfo;
 
 	public void setConnDao(ConnectionDao connDao) {
 		this.connDao = connDao;
@@ -117,11 +120,41 @@ public class UserController extends HttpServlet {
 		return view;
 	}
 
-	private String placeloan(HttpServletRequest request, HttpServletResponse response) {
+	private String placeloan(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		// TODO Auto-generated method stub
 		/* write the code to place the loan information */
+		
+		String view = "application.jsp";
+		int loanid = connDao.getNextCustLoanId();
+		String loantype = request.getParameter("LoanType");
+		String loanamount = request.getParameter("LoanAmount");
+		int loanamount1 = Integer.parseInt(loanamount);
+		String ApplDate = request.getParameter("doa");
+		String BusinessStructure = request.getParameter("Business Structure");
+		String BillingIndi = request.getParameter("Billing Indicator");
+		String Address = request.getParameter("Address");
+		String Mobile = request.getParameter("Mobile");
+		String Email = request.getParameter("EmailId");
+		LoanInfo loaninfo = new LoanInfo(connDao.getNextCustLoanId(), loantype, loanamount1, ApplDate, BusinessStructure, BillingIndi, "Active",Address, Email, Mobile);
+		
+		
+		try {
+			
+			if (connDao.addLoanDetails(loaninfo)) {
+				request.setAttribute("sucsMsg", "Loan Application details submitted successfully with loan id: "+loanid);	
+				view = "userhome1.jsp";
+			}
+			else {
+				throw new Exception("Failed to register new user");
+			}
+			
+		} catch (Exception exception) {
+			request.setAttribute("exception", exception);
+			view = "errorPage.jsp";
+		}
+		
+		return view;
 
-		return null;
 	}
 
 	private String application1(HttpServletRequest request, HttpServletResponse response) {
@@ -135,7 +168,26 @@ public class UserController extends HttpServlet {
 		// TODO Auto-generated method stub
 		/* write the code to edit the loan info */
 
-		return null;
+		String view = "editloanui.jsp";
+		String str_amount = request.getParameter("EnterAmount");
+		String str_loanappnumber = request.getParameter("LoanApplicationNumber");
+		
+		try {
+			if(!(str_amount==null)) {
+			connDao.UpdateAmount(str_loanappnumber,str_amount);
+			request.setAttribute("sucsMsg", "Loan updated with the changes");	
+			view = "loanDetails.jsp";
+			}
+		else {
+			throw new Exception("Failed to fetch status for the given loan id");
+			}
+		}
+		
+		catch (Exception exception) {
+			request.setAttribute("exception", exception);
+			view = "errorPage.jsp";}
+		
+		return view;
 	}
 
 	private String registerUser(HttpServletRequest request, HttpServletResponse response) throws SQLException {
@@ -188,15 +240,53 @@ public class UserController extends HttpServlet {
 		 * number
 		 */
 
+		String view = "trackloan.jsp";
 		String str_loanappnumber = request.getParameter("LoanApplicationNumber");
-
-		return null;
+		
+		try {
+			if(!(str_loanappnumber==null)) {
+			String loanstatus = connDao.loanstatus(str_loanappnumber);
+			request.setAttribute("sucsMsg", "Loan Application status with loan id : "+str_loanappnumber+" is "+loanstatus);	
+			view = "loanDetails.jsp";
+			}
+		else {
+			throw new Exception("Failed to fetch status for the given loan id");
+			}
+		}
+		
+		catch (Exception exception) {
+			request.setAttribute("exception", exception);
+			view = "errorPage.jsp";}
+		
+		return view;
 	}
 
 	private String editloan(HttpServletRequest request, HttpServletResponse response) {
 		// TODO Auto-generated method stub
 		/* write a code to return to editloan page */
-		return null;
+		String view = "editloan.jsp";
+		String str_loanappnumber = request.getParameter("LoanApplicationNumber");
+		
+		try {
+			if(!(str_loanappnumber==null)) {
+			String loanstatus = connDao.loanstatus(str_loanappnumber);
+				if(loanstatus.equalsIgnoreCase("Active")) {
+					request.setAttribute("sucsMsg", "Loan Application status with loan id: "+str_loanappnumber+" is "+loanstatus);
+					request.setAttribute("loanId", str_loanappnumber);
+					view = "editloanui.jsp";
+				}
+			
+			}
+			else {
+				throw new Exception("Failed to fetch status for the given loan id");
+				}
+		}
+		
+		catch (Exception exception) {
+			request.setAttribute("exception", exception);
+			view = "errorPage.jsp";}
+		
+		return view;
 	}
 
 	private String trackloan(HttpServletRequest request, HttpServletResponse response) {
@@ -212,3 +302,4 @@ public class UserController extends HttpServlet {
 		return null;
 	}
 }
+	

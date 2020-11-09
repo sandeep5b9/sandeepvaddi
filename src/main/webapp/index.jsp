@@ -33,7 +33,7 @@
 				</div>
 			</div>
 			<br /> 
-			<span>New User? <a href="newuserui.jsp">register here</a></span>
+			<span>New User? <a href="newuserui.jsp">Register Here</a></span>
 		</form>
 		<span style="color:red;"> 
 			<c:if test="${failMsg!=null}">"${failMsg}"</c:if>
