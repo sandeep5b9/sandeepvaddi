@@ -135,12 +135,13 @@ public class UserController extends HttpServlet {
 		String Address = request.getParameter("Address");
 		String Mobile = request.getParameter("Mobile");
 		String Email = request.getParameter("EmailId");
-		LoanInfo loaninfo = new LoanInfo(connDao.getNextCustLoanId(), loantype, loanamount1, ApplDate, BusinessStructure, BillingIndi, "Active",Address, Email, Mobile);
+		String term = request.getParameter("term");
+		LoanInfo loaninfo = new LoanInfo(connDao.getNextCustLoanId(), loantype, loanamount1, ApplDate, BusinessStructure, BillingIndi, "Active",Address, Email, Mobile,term);
 		
 		
 		try {
 			
-			if (connDao.addLoanDetails(loaninfo)) {
+			if (connDao.addLoanDetails(loaninfo, term)) {
 				request.setAttribute("sucsMsg", "Loan Application details submitted successfully with loan id: "+loanid);	
 				view = "userhome1.jsp";
 			}

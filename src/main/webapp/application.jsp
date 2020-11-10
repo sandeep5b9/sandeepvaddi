@@ -114,6 +114,15 @@
 			<br /> 
 			<div>
 				<div>
+					<label for="term">Term</label>
+				</div>
+				<div>
+					<input type="text" id="term" name="term">
+				</div> 
+			</div>
+			<br /> 
+			<div>
+				<div>
 					<input type="submit" value="Submit">
 				</div>
 			</div>

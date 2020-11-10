@@ -21,6 +21,7 @@ import com.iiht.evaluation.eloan.dao.ConnectionDao;
 import com.iiht.evaluation.eloan.dto.LoanDto;
 import com.iiht.evaluation.eloan.model.ApprovedLoan;
 import com.iiht.evaluation.eloan.model.LoanInfo;
+import com.iiht.evaluation.eloan.model.User;
 
 
 @WebServlet("/admin")
@@ -88,7 +89,31 @@ public class AdminController extends HttpServlet {
 		// TODO Auto-generated method stub
 	/* write the code to calculate emi for given applno and display the details */
 		
-		return null;
+		String view = "process.jsp";
+		
+		String str_loanappnumber = request.getParameter("LoanApplicationNumber");
+		
+		try {
+			if(!(str_loanappnumber==null)) {
+			connDao.emiDetails(str_loanappnumber);
+			request.setAttribute("sucsMsg", "Loan updated with the changes");	
+			view = "loanDetails.jsp";
+			}
+		else {
+			throw new Exception("Failed to fetch status for the given loan id");
+			}
+		}
+		
+		catch (Exception exception) {
+			request.setAttribute("exception", exception);
+			view = "errorPage.jsp";}
+		
+		return view;
+		
+		
+		
+		
+//		return null;
 	}
 	private String process(HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		// TODO Auto-generated method stub
@@ -104,7 +129,26 @@ public class AdminController extends HttpServlet {
 	private String listall(HttpServletRequest request, HttpServletResponse response) throws SQLException {
 	/* write the code to display all the loans */
 		
-		return null;
+		String view = "adminhome1.jsp";
+		
+		try {
+				List<LoanInfo> loansInfo = connDao.getLoansDetails();
+				if (loansInfo.size()==0) {
+					request.setAttribute("failMsg", "No loans available");
+					throw new Exception("No loans available");
+				} else {
+						request.setAttribute("loans", loansInfo);	
+						view = "listall.jsp";
+					}
+			}
+		
+		catch (Exception exception) {
+			request.setAttribute("exception", exception);
+			view = "errorPage.jsp";
+		}
+		
+		return view;
+		
 	}
 
 	

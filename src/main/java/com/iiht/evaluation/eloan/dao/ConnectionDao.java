@@ -27,11 +27,16 @@ public class ConnectionDao {
 	public static final String INST_USER_DTL = "INSERT INTO REGISTER(USERID,PASSWORD) VALUES(?,?)";
 
 	public static final String GET_Loan_Status = "SELECT status FROM loaninfo where loanid=?";
-	public static final String GET_AllLoanApplicant_DTL = "SELECT * FROM loaninfo";
+	public static final String GET_Loan_Amount_term = "SELECT loanamt, term FROM loaninfo where loanid=?";
+	public static final String GET_AllLoanApplicant_DTL = "SELECT LOANID,LOANPURPOSE,LOANAMT,DOA,BSSTRUCTURE,BIINDICATOR,STATUS,ADDRESS,EMAIL,MOBILE,TERM from test.loaninfo;";
 	public static final String MAX_CustLoanID_QRY = "SELECT MAX(loanid) FROM loaninfo;";
-	public static final String INST_UserLoan_DTL = "INSERT INTO loaninfo(loanpurpose, loanid, loanamt, doa, bsstructure,biindicator,status,address, email, mobile)"
+	public static final String INST_UserLoan_DTL = "INSERT INTO loaninfo(loanpurpose, loanid, loanamt, doa, bsstructure,biindicator,status,address, email, mobile,term)"
 			+ " VALUES(?,?,?,?,?,?,?,?,?,?)";
 	public static final String UPDT_UserLoan_DTL = "UPDATE loaninfo set loanamt=? where loanid=?";
+	
+	public static final String UPDT_AdminApproveReject_DTL = "UPDATE loaninfo set status=? where loanid=?";
+	
+	public static final String UPDT_AdminLoanInfo_DTL = "UPDATE adminloaninfo set amountsanctioned=?,loanterm=?,paymentstartdate=?,paymentenddate=?,termpayment=?,monthlypayment=? where loanid=?";
 
 	public ConnectionDao(String jdbcURL, String jdbcUsername, String jdbcPassword) {
 		this.jdbcURL = jdbcURL;
@@ -108,7 +113,7 @@ public class ConnectionDao {
 	}
 
 	// adding customer loan details to the data base
-	public boolean addLoanDetails(LoanInfo loanInfo) throws Exception {
+	public boolean addLoanDetails(LoanInfo loanInfo, String term) throws Exception {
 		boolean isAdded = false;
 		try {
 			this.connect();
@@ -123,6 +128,7 @@ public class ConnectionDao {
 			ps.setString(8, loanInfo.getAddress());
 			ps.setString(9, loanInfo.getEmail());
 			ps.setString(10, loanInfo.getMobile());
+			ps.setString(11, term);
 			
 			isAdded = ps.executeUpdate() > 0;
 
@@ -167,6 +173,58 @@ public class ConnectionDao {
 		}
 
 		return isAdded;
+	}
+	
+	//get all loans details
+	public List<LoanInfo> getLoansDetails() throws Exception {
+		List<LoanInfo> allloanslist = new ArrayList<LoanInfo>();
+		try {
+			this.connect();
+			PreparedStatement ps = jdbcConnection.prepareStatement(GET_AllLoanApplicant_DTL);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				
+				LoanInfo loaninfo = new LoanInfo(rs.getInt(1),rs.getString(2),rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7), rs.getString(8), rs.getString(9), rs.getString(10),rs.getString(11));
+				
+				allloanslist.add(loaninfo);
+			}
+
+		} catch (SQLException e) {
+			this.disconnect();
+			throw new Exception("Failure in fetching list of loans");
+		}
+		return allloanslist;
+	}
+	
+	
+	//emi calculate
+	public List<ApprovedLoan> emiDetails(String loanid) throws Exception {
+		
+		List<ApprovedLoan> emiamount = new ArrayList<ApprovedLoan>();
+		boolean isAdded = false;
+		try {
+			this.connect();
+			PreparedStatement ps = jdbcConnection.prepareStatement(GET_Loan_Amount_term);
+			ps.setString(1, loanid);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				String amount = rs.getString(3);
+				String term = rs.getString(11);
+				
+				Double termpaymentamount = Double.parseDouble(amount)*(1+8/100)*20;
+				Double monthlypayment = termpaymentamount/Double.parseDouble(term) ;
+				ApprovedLoan emi = new ApprovedLoan();
+				//emi = {String.valueOf(termpaymentamount),String.valueOf(monthlypayment)};
+			
+			}
+			isAdded = ps.executeUpdate() > 0;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new Exception("Failure in fetching customer loan details");
+		}
+
+		return null;
 	}
 
 }

@@ -10,13 +10,14 @@ public class LoanInfo {
 	private String email;
 	private String mobile;
 	private String status;
+	private String term;
 
 	public LoanInfo() {
 
 	}
 
 	public LoanInfo(int applno, String purpose, int amtrequest, String doa, String bstructure, String bindicator,String status,
-			String address, String email, String mobile) {
+			String address, String email, String mobile, String term) {
 		super();
 		this.applno = applno;
 		this.purpose = purpose;
@@ -28,6 +29,7 @@ public class LoanInfo {
 		this.email = email;
 		this.mobile = mobile;
 		this.status = status;
+		this.term = term;
 	}
 
 	public int getApplno() {
@@ -104,6 +106,14 @@ public class LoanInfo {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public String getTerm() {
+		return term;
+	}
+
+	public void setTerm(String term) {
+		this.status = term;
 	}
 
 	public String getStatus() {

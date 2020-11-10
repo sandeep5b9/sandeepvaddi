@@ -7,6 +7,8 @@ public class ApprovedLoan {
 	String psd;
 	String lcd;
 	int emi;
+	private int termpayment;
+	private int monthlypayment;
 	
 	public ApprovedLoan() {
 		super();
@@ -22,6 +24,12 @@ public class ApprovedLoan {
 		this.lcd = lcd;
 		this.emi = emi;
 	}
+	
+	public void Emi(int termpayment, int monthlypayment) {
+		this.termpayment = termpayment;
+		this.monthlypayment = monthlypayment;
+	}
+	
 
 	public String getApplno() {
 		return applno;
